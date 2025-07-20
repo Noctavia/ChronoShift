@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChronoShift: The Web Paradox</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #00ff00;
+            overflow: hidden;
+        }
+
+        .boot-sequence {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.5s;
+        }
+
+        .boot-text {
+            font-size: 14px;
+            margin: 5px 0;
+            opacity: 0;
+            animation: fadeIn 0.3s forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        .timeline-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2px;
+            background: #111;
+        }
+
+        .timeline {
+            background: linear-gradient(45deg, #001122, #002244);
+            border: 2px solid #00ff00;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .timeline-alpha {
+            background: linear-gradient(45deg, #220011, #440022);
+            border-color: #ff0066;
+        }
+
+        .timeline-beta {
+            background: linear-gradient(45deg, #112200, #224400);
+            border-color: #66ff00;
+        }
+
+        .timeline-gamma {
+            background: linear-gradient(45deg, #001122, #002244);
+            border-color: #0066ff;
+        }
+
+        .timeline-delta {
+            background: linear-gradient(45deg, #221100, #442200);
+            border-color: #ffaa00;
+        }
+
+        .timeline-header {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            z-index: 10;
+        }
+
+        .game-world {
+            position: absolute;
+            top: 40px;
+            left: 10px;
+            right: 10px;
+            bottom: 50px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .player {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #fff, #00ff00);
+            border: 2px solid #00ff00;
+            transition: all 0.1s;
+            z-index: 5;
+            box-shadow: 0 0 10px currentColor;
+        }
+
+        .player.alpha { background: radial-gradient(circle, #fff, #ff0066); border-color: #ff0066; }
+        .player.beta { background: radial-gradient(circle, #fff, #66ff00); border-color: #66ff00; }
+        .player.gamma { background: radial-gradient(circle, #fff, #0066ff); border-color: #0066ff; }
+        .player.delta { background: radial-gradient(circle, #fff, #ffaa00); border-color: #ffaa00; }
+
+        .obstacle {
+            position: absolute;
+            background: #666;
+            border: 1px solid #999;
+        }
+
+        .door {
+            position: absolute;
+            background: #333;
+            border: 2px solid #666;
+            transition: all 0.3s;
+        }
+
+        .door.open {
+            background: transparent;
+            border-color: #00ff00;
+            box-shadow: 0 0 15px #00ff00;
+        }
+
+        .switch {
+            position: absolute;
+            width: 30px;
+            height: 15px;
+            background: #ff3333;
+            border: 2px solid #fff;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .switch.active {
+            background: #33ff33;
+            box-shadow: 0 0 10px #33ff33;
+        }
+
+        .target {
+            position: absolute;
+            width: 25px;
+            height: 25px;
+            background: radial-gradient(circle, transparent 40%, #ffff00 50%, transparent 60%);
+            border: 2px dashed #ffff00;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.1); }
+        }
+
+        .timeline-info {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            right: 10px;
+            font-size: 10px;
+            background: rgba(0,0,0,0.7);
+            padding: 5px;
+            border-radius: 3px;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #00ff00;
+            z-index: 100;
+        }
+
+        .console-overlay {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 200px;
+            background: rgba(0,0,0,0.9);
+            border-top: 2px solid #00ff00;
+            padding: 10px;
+            font-size: 12px;
+            display: none;
+            overflow-y: auto;
+            z-index: 200;
+        }
+
+        .console-overlay.active {
+            display: block;
+        }
+
+        .console-line {
+            margin: 2px 0;
+            opacity: 0;
+            animation: consoleFadeIn 0.5s forwards;
+        }
+
+        @keyframes consoleFadeIn {
+            to { opacity: 1; }
+        }
+
+        .multiverse-status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #00ff00;
+            font-size: 11px;
+            z-index: 100;
+        }
+
+        .glitch {
+            animation: glitch 0.1s infinite;
+        }
+
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            25% { transform: translate(-2px, 2px); }
+            50% { transform: translate(2px, -2px); }
+            75% { transform: translate(-1px, -1px); }
+            100% { transform: translate(0); }
+        }
+
+        .timeline.connected::before {
+            content: "🔗 SYNC";
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: #00ff00;
+            font-size: 10px;
+            animation: pulse 2s infinite;
+        }
+
+        .causal-link {
+            position: absolute;
+            width: 2px;
+            background: linear-gradient(45deg, #ff00ff, #00ffff);
+            z-index: 1;
+            animation: energyFlow 1s infinite;
+        }
+
+        @keyframes energyFlow {
+            0% { box-shadow: 0 0 5px #ff00ff; }
+            50% { box-shadow: 0 0 15px #00ffff; }
+            100% { box-shadow: 0 0 5px #ff00ff; }
+        }
+
+        .paradox-warning {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255,0,0,0.9);
+            color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            border: 3px solid #fff;
+            z-index: 1000;
+            display: none;
+            text-align: center;
+            animation: shake 0.5s infinite;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translate(-50%, -50%); }
+            25% { transform: translate(-52%, -48%); }
+            75% { transform: translate(-48%, -52%); }
+        }
+    </style>
+</head>
+<body>
+    <div class="boot-sequence" id="bootSequence">
+        <div class="boot-text">CHRONOSHIFT SYSTEMS v2.7.4</div>
+        <div class="boot-text">Initializing quantum processors...</div>
+        <div class="boot-text">Loading temporal matrices...</div>
+        <div class="boot-text">Synchronizing parallel timelines...</div>
+        <div class="boot-text">⚠️  CAUTION: TEMPORAL PARADOX POSSIBLE</div>
+        <div class="boot-text">Press any key to enter the multiverse...</div>
+    </div>
+
+    <div class="multiverse-status" id="multiverseStatus">
+        <div>🌌 MULTIVERSE STATUS</div>
+        <div>Active Timelines: <span id="activeTimelines">4</span></div>
+        <div>Sync Rate: <span id="syncRate">100%</span></div>
+        <div>Paradox Risk: <span id="paradoxRisk">LOW</span></div>
+        <div>Causal Loops: <span id="causalLoops">0</span></div>
+    </div>
+
+    <div class="timeline-container" id="timelineContainer" style="display: none;">
+        <div class="timeline timeline-alpha connected" id="timelineAlpha">
+            <div class="timeline-header">TIMELINE α [PRIME]</div>
+            <div class="game-world">
+                <div class="player alpha" id="playerAlpha" style="left: 50px; top: 50px;"></div>
+                <div class="obstacle" style="left: 100px; top: 100px; width: 60px; height: 20px;"></div>
+                <div class="switch" id="switchAlpha" style="left: 200px; top: 80px;"></div>
+                <div class="door" id="doorAlpha" style="left: 300px; top: 120px; width: 20px; height: 80px;"></div>
+                <div class="target" style="left: 350px; top: 150px;"></div>
+            </div>
+            <div class="timeline-info">
+                <div>Time Dilation: x1.0 | Gravity: Normal | Reality Index: 97.3%</div>
+            </div>
+        </div>
+
+        <div class="timeline timeline-beta connected" id="timelineBeta">
+            <div class="timeline-header">TIMELINE β [MIRROR]</div>
+            <div class="game-world">
+                <div class="player beta" id="playerBeta" style="left: 50px; top: 100px;"></div>
+                <div class="obstacle" style="left: 150px; top: 80px; width: 20px; height: 60px;"></div>
+                <div class="door" id="doorBeta" style="left: 250px; top: 90px; width: 80px; height: 20px;"></div>
+                <div class="switch" id="switchBeta" style="left: 320px; top: 150px;"></div>
+                <div class="target" style="left: 380px; top: 120px;"></div>
+            </div>
+            <div class="timeline-info">
+                <div>Time Dilation: x0.8 | Gravity: Inverted | Reality Index: 94.1%</div>
+            </div>
+        </div>
+
+        <div class="timeline timeline-gamma connected" id="timelineGamma">
+            <div class="timeline-header">TIMELINE γ [QUANTUM]</div>
+            <div class="game-world">
+                <div class="player gamma" id="playerGamma" style="left: 80px; top: 120px;"></div>
+                <div class="obstacle" style="left: 120px; top: 60px; width: 40px; height: 40px;"></div>
+                <div class="switch" id="switchGamma" style="left: 180px; top: 140px;"></div>
+                <div class="door" id="doorGamma" style="left: 280px; top: 60px; width: 20px; height: 100px;"></div>
+                <div class="target" style="left: 320px; top: 180px;"></div>
+            </div>
+            <div class="timeline-info">
+                <div>Time Dilation: x1.5 | Gravity: Low | Reality Index: 89.7%</div>
+            </div>
+        </div>
+
+        <div class="timeline timeline-delta connected" id="timelineDelta">
+            <div class="timeline-header">TIMELINE δ [CHAOS]</div>
+            <div class="game-world">
+                <div class="player delta" id="playerDelta" style="left: 70px; top: 80px;"></div>
+                <div class="obstacle" style="left: 140px; top: 120px; width: 80px; height: 15px;"></div>
+                <div class="door" id="doorDelta" style="left: 260px; top: 100px; width: 15px; height: 60px;"></div>
+                <div class="switch" id="switchDelta" style="left: 300px; top: 180px;"></div>
+                <div class="target" style="left: 340px; top: 60px;"></div>
+            </div>
+            <div class="timeline-info">
+                <div>Time Dilation: x2.0 | Gravity: Chaotic | Reality Index: 76.2%</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <div>⌨️ WASD/Arrows: Move | SPACE: Interact | F12: Console | ESC: Pause</div>
+        <div>🎯 Goal: Reach all targets simultaneously across timelines</div>
+    </div>
+
+    <div class="console-overlay" id="console">
+        <div class="console-line">> ChronoShift Debug Console v2.7.4</div>
+        <div class="console-line">> Type 'help' for commands</div>
+        <div class="console-line" id="consoleInput">> <span id="cursor">_</span></div>
+    </div>
+
+    <div class="paradox-warning" id="paradoxWarning">
+        <h2>⚠️ TEMPORAL PARADOX DETECTED ⚠️</h2>
+        <p>Causality loop detected! Reality integrity compromised!</p>
+        <p>Resolving quantum entanglements...</p>
+    </div>
+
+    <script>
+        class ChronoShiftGame {
+            constructor() {
+                this.timelines = ['Alpha', 'Beta', 'Gamma', 'Delta'];
+                this.players = {};
+                this.switches = {};
+                this.doors = {};
+                this.gameState = {
+                    activeTimeline: 'Alpha',
+                    switchStates: {},
+                    paradoxLevel: 0,
+                    syncRate: 100,
+                    causalLoops: 0
+                };
+                this.keys = {};
+                this.consoleMode = false;
+                this.consoleInput = '';
+                this.bootComplete = false;
+                
+                this.init();
+            }
+
+            init() {
+                this.setupBootSequence();
+                this.setupEventListeners();
+                this.initializeGameElements();
+                this.startGameLoop();
+            }
+
+            setupBootSequence() {
+                const bootTexts = document.querySelectorAll('.boot-text');
+                bootTexts.forEach((text, index) => {
+                    text.style.animationDelay = `${index * 0.8}s`;
+                });
+
+                setTimeout(() => {
+                    document.addEventListener('keydown', this.completeBootSequence.bind(this), { once: true });
+                }, bootTexts.length * 800 + 1000);
+            }
+
+            completeBootSequence() {
+                if (this.bootComplete) return;
+                this.bootComplete = true;
+                
+                document.getElementById('bootSequence').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('bootSequence').style.display = 'none';
+                    document.getElementById('timelineContainer').style.display = 'grid';
+                    this.logConsole('>> Multiverse initialized successfully');
+                    this.logConsole('>> Temporal synchronization active');
+                    this.startQuantumEffects();
+                }, 500);
+            }
+
+            setupEventListeners() {
+                document.addEventListener('keydown', (e) => {
+                    if (!this.bootComplete) {
+                        this.completeBootSequence();
+                        return;
+                    }
+
+                    this.keys[e.code] = true;
+                    
+                    if (e.code === 'F12') {
+                        e.preventDefault();
+                        this.toggleConsole();
+                    }
+
+                    if (this.consoleMode) {
+                        this.handleConsoleInput(e);
+                    }
+                });
+
+                document.addEventListener('keyup', (e) => {
+                    this.keys[e.code] = false;
+                });
+
+                // Switch interactions
+                this.timelines.forEach(timeline => {
+                    const switchEl = document.getElementById(`switch${timeline}`);
+                    switchEl.addEventListener('click', () => {
+                        this.toggleSwitch(timeline);
+                    });
+                });
+            }
+
+            initializeGameElements() {
+                this.timelines.forEach(timeline => {
+                    this.players[timeline] = document.getElementById(`player${timeline}`);
+                    this.switches[timeline] = document.getElementById(`switch${timeline}`);
+                    this.doors[timeline] = document.getElementById(`door${timeline}`);
+                    this.gameState.switchStates[timeline] = false;
+                });
+            }
+
+            startGameLoop() {
+                setInterval(() => {
+                    if (this.bootComplete && !this.consoleMode) {
+                        this.updatePlayers();
+                        this.updateQuantumEffects();
+                        this.checkCausalConnections();
+                        this.updateMultiverseStatus();
+                    }
+                }, 16);
+            }
+
+            updatePlayers() {
+                this.timelines.forEach(timeline => {
+                    const player = this.players[timeline];
+                    const rect = player.getBoundingClientRect();
+                    const gameWorld = player.parentElement.getBoundingClientRect();
+                    
+                    let x = parseInt(player.style.left) || 0;
+                    let y = parseInt(player.style.top) || 0;
+                    
+                    const speed = timeline === 'Delta' ? 4 : 
+                                 timeline === 'Gamma' ? 3 : 
+                                 timeline === 'Beta' ? 2 : 3;
+
+                    if (this.keys['KeyW'] || this.keys['ArrowUp']) y -= speed;
+                    if (this.keys['KeyS'] || this.keys['ArrowDown']) y += speed;
+                    if (this.keys['KeyA'] || this.keys['ArrowLeft']) x -= speed;
+                    if (this.keys['KeyD'] || this.keys['ArrowRight']) x += speed;
+
+                    // Apply timeline-specific physics
+                    if (timeline === 'Beta') {
+                        // Mirror timeline - inverted gravity effect
+                        y += Math.sin(Date.now() * 0.001) * 0.5;
+                    } else if (timeline === 'Gamma') {
+                        // Quantum timeline - probability field
+                        x += Math.random() * 0.5 - 0.25;
+                        y += Math.random() * 0.5 - 0.25;
+                    } else if (timeline === 'Delta') {
+                        // Chaos timeline - chaotic movement
+                        x += Math.sin(Date.now() * 0.003) * 0.3;
+                        y += Math.cos(Date.now() * 0.005) * 0.3;
+                    }
+
+                    // Boundary checking
+                    x = Math.max(0, Math.min(x, 400));
+                    y = Math.max(0, Math.min(y, 200));
+
+                    player.style.left = x + 'px';
+                    player.style.top = y + 'px';
+                });
+
+                if (this.keys['Space']) {
+                    this.interactWithEnvironment();
+                }
+            }
+
+            toggleSwitch(timeline) {
+                this.gameState.switchStates[timeline] = !this.gameState.switchStates[timeline];
+                const switchEl = this.switches[timeline];
+                
+                if (this.gameState.switchStates[timeline]) {
+                    switchEl.classList.add('active');
+                } else {
+                    switchEl.classList.remove('active');
+                }
+
+                this.updateCausalEffects(timeline);
+                this.logConsole(`>> Switch ${timeline} ${this.gameState.switchStates[timeline] ? 'ACTIVATED' : 'DEACTIVATED'}`);
+            }
+
+            updateCausalEffects(timeline) {
+                // Complex causal relationship matrix
+                const causalMap = {
+                    'Alpha': ['Beta', 'Gamma'],
+                    'Beta': ['Delta', 'Alpha'],
+                    'Gamma': ['Alpha', 'Delta'],
+                    'Delta': ['Beta', 'Gamma']
+                };
+
+                causalMap[timeline].forEach(targetTimeline => {
+                    const door = this.doors[targetTimeline];
+                    if (this.gameState.switchStates[timeline]) {
+                        door.classList.add('open');
+                    } else {
+                        door.classList.remove('open');
+                    }
+                });
+
+                this.createCausalLink(timeline, causalMap[timeline]);
+                this.checkParadox();
+            }
+
+            createCausalLink(source, targets) {
+                // Remove existing causal links
+                document.querySelectorAll('.causal-link').forEach(link => link.remove());
+
+                targets.forEach(target => {
+                    const sourceEl = document.getElementById(`timeline${source}`);
+                    const targetEl = document.getElementById(`timeline${target}`);
+                    
+                    if (sourceEl && targetEl) {
+                        const link = document.createElement('div');
+                        link.className = 'causal-link';
+                        link.style.left = '50%';
+                        link.style.top = '10px';
+                        link.style.height = '30px';
+                        sourceEl.appendChild(link);
+                        
+                        setTimeout(() => link.remove(), 2000);
+                    }
+                });
+            }
+
+            checkParadox() {
+                // Check for temporal paradox conditions
+                const activeCount = Object.values(this.gameState.switchStates).filter(Boolean).length;
+                
+                if (activeCount >= 3) {
+                    this.gameState.paradoxLevel++;
+                    this.gameState.causalLoops++;
+                    
+                    if (this.gameState.paradoxLevel > 5) {
+                        this.triggerParadoxEvent();
+                    }
+                }
+            }
+
+            triggerParadoxEvent() {
+                const warning = document.getElementById('paradoxWarning');
+                warning.style.display = 'block';
+                
+                // Glitch effect on all timelines
+                document.querySelectorAll('.timeline').forEach(tl => {
+                    tl.classList.add('glitch');
+                });
+                
+                this.logConsole('>> ⚠️  CRITICAL: Temporal paradox detected!');
+                this.logConsole('>> Reality matrix destabilizing...');
+                
+                setTimeout(() => {
+                    warning.style.display = 'none';
+                    document.querySelectorAll('.timeline').forEach(tl => {
+                        tl.classList.remove('glitch');
+                    });
+                    this.gameState.paradoxLevel = 0;
+                    this.logConsole('>> Quantum stabilizers engaged. Reality restored.');
+                }, 3000);
+            }
+
+            startQuantumEffects() {
+                setInterval(() => {
+                    if (Math.random() < 0.1) {
+                        const randomTimeline = this.timelines[Math.floor(Math.random() * this.timelines.length)];
+                        const timelineEl = document.getElementById(`timeline${randomTimeline}`);
+                        timelineEl.style.filter = 'hue-rotate(' + (Math.random() * 360) + 'deg)';
+                        
+                        setTimeout(() => {
+                            timelineEl.style.filter = '';
+                        }, 200);
+                    }
+                }, 1000);
+            }
+
+            updateQuantumEffects() {
+                // Sync rate calculation based on reality coherence
+                const totalSwitches = Object.keys(this.gameState.switchStates).length;
+                const activeSwitches = Object.values(this.gameState.switchStates).filter(Boolean).length;
+                this.gameState.syncRate = Math.max(20, 100 - (this.gameState.paradoxLevel * 10));
+            }
+
+            updateMultiverseStatus() {
+                document.getElementById('syncRate').textContent = this.gameState.syncRate + '%';
+                document.getElementById('causalLoops').textContent = this.gameState.causalLoops;
+                document.getElementById('paradoxRisk').textContent = 
+                    this.gameState.paradoxLevel > 3 ? 'CRITICAL' :
+                    this.gameState.paradoxLevel > 1 ? 'HIGH' : 'LOW';
+            }
+
+            toggleConsole() {
+                this.consoleMode = !this.consoleMode;
+                const console = document.getElementById('console');
+                console.classList.toggle('active');
+                
+                if (this.consoleMode) {
+                    this.logConsole('>> Debug console activated');
+                }
+            }
+
+            handleConsoleInput(e) {
+                if (e.key === 'Enter') {
+                    this.processConsoleCommand(this.consoleInput);
+                    this.consoleInput = '';
+                    this.updateConsoleDisplay();
+                } else if (e.key === 'Backspace') {
+                    this.consoleInput = this.consoleInput.slice(0, -1);
+                    this.updateConsoleDisplay();
+                } else if (e.key.length === 1) {
+                    this.consoleInput += e.key;
+                    this.updateConsoleDisplay();
+                }
+            }
+
+            processConsoleCommand(cmd) {
+                this.logConsole('>> ' + cmd);
+                
+                switch(cmd.toLowerCase()) {
+                    case 'help':
+                        this.logConsole('Available commands: status, reset, quantum, paradox, sync');
+                        break;
+                    case 'status':
+                        this.logConsole(`Sync Rate: ${this.gameState.syncRate}%`);
+                        this.logConsole(`Paradox Level: ${this.gameState.paradoxLevel}`);
+                        this.logConsole(`Active Switches: ${Object.values(this.gameState.switchStates).filter(Boolean).length}`);
+                        break;
+                    case 'reset':
+                        this.resetGameState();
+                        this.logConsole('Game state reset');
+                        break;
+                    case 'quantum':
+                        this.triggerQuantumFluctuation();
+                        break;
+                    case 'paradox':
+                        this.triggerParadoxEvent();
+                        break;
+                    case 'sync':
+                        this.gameState.syncRate = 100;
+                        this.logConsole('Timeline synchronization restored');
+                        break;
+                    default:
+                        this.logConsole('Unknown command. Type "help" for available commands.');
+                }
+            }
+
+            updateConsoleDisplay() {
+                document.getElementById('consoleInput').innerHTML = '>> ' + this.consoleInput + '<span id="cursor">_</span>';
+            }
+
+            logConsole(message) {
+                const console = document.getElementById('console');
+                const line = document.createElement('div');
+                line.className = 'console-line';
+                line.textContent = message;
+                console.insertBefore(line, document.getElementById('consoleInput'));
+                console.scrollTop = console.scrollHeight;
+            }
+
+            triggerQuantumFluctuation() {
+                this.logConsole('>> Quantum fluctuation initiated');
+                this.timelines.forEach(timeline => {
+                    const player = this.players[timeline];
+                    const x = Math.random() * 350;
+                    const y = Math.random() * 180;
+                    player.style.left = x + 'px';
+                    player.style.top = y + 'px';
+                });
+            }
+
+            resetGameState() {
+                Object.keys(this.gameState.switchStates).forEach(timeline => {
+                    this.gameState.switchStates[timeline] = false;
+                    this.switches[timeline].classList.remove('active');
+                    this.doors[timeline].classList.remove('open');
+                });
+                this.gameState.paradoxLevel = 0;
+                this.gameState.causalLoops = 0;
+                this.gameState.syncRate = 100;
+            }
+
+            interactWithEnvironment() {
+                // Check for interactions with switches
+                this.timelines.forEach(timeline => {
+                    const player = this.players[timeline];
+                    const switchEl = this.switches[timeline];
+                    
+                    const playerRect = player.getBoundingClientRect();
+                    const switchRect = switchEl.getBoundingClientRect();
+                    
+                    if (this.isColliding(playerRect, switchRect)) {
+                        this.toggleSwitch(timeline);
+                    }
+                });
+            }
+
+            isColliding(rect1, rect2) {
+                return !(rect1.right < rect2.left || 
+                        rect1.left > rect2.right || 
+                        rect1.bottom < rect2.top || 
+                        rect1.top > rect2.bottom);
+            }
+
+            checkCausalConnections() {
+                // Update causal connection status
+                let connectedCount = 0;
+                Object.values(this.gameState.switchStates).forEach(state => {
+                    if (state) connectedCount++;
+                });
+                
+                this.timelines.forEach(timeline => {
+                    const timelineEl = document.getElementById(`timeline${timeline}`);
+                    if (connectedCount > 0) {
+                                                timelineEl.classList.add('connected');
+                    } else {
+                        timelineEl.classList.remove('connected');
+                    }
+                });
+            }
+        }
+
+        // Lancer le jeu une fois la page chargée
+        window.addEventListener('DOMContentLoaded', () => {
+            new ChronoShiftGame();
+        });
+    </script>
+</body>
+</html>

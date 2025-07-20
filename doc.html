@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChronoShift Docs - Temporal Knowledge Base</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-bg: #0a0a0a;
+            --secondary-bg: #111111;
+            --accent-bg: #1a1a1a;
+            --border-color: #333333;
+            --primary-text: #e0e0e0;
+            --secondary-text: #a0a0a0;
+            --accent-color: #00d4ff;
+            --highlight-color: #ff6b6b;
+            --success-color: #4ecdc4;
+            --warning-color: #ffe66d;
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-accent: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --shadow-glow: 0 0 20px rgba(0, 212, 255, 0.3);
+        }
+
+        body {
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            background: var(--primary-bg);
+            color: var(--primary-text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Background Animation */
+        .background-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.1;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            animation: twinkle 3s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.5); }
+        }
+
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: rgba(26, 26, 26, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            padding: 0 2rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+
+        .logo::before {
+            content: "🌌";
+            font-size: 2rem;
+            animation: rotate 10s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .nav-links {
+            margin-left: auto;
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-link {
+            color: var(--secondary-text);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            color: var(--accent-color);
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        .nav-link.active::after {
+            content: "";
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--accent-color);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 70px;
+            left: 0;
+            width: 300px;
+            height: calc(100vh - 70px);
+            background: var(--secondary-bg);
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+            padding: 1rem 0;
+            z-index: 100;
+            transform: translateX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(-280px);
+        }
+
+        .sidebar-toggle {
+            position: absolute;
+            right: -40px;
+            top: 20px;
+            width: 40px;
+            height: 40px;
+            background: var(--secondary-bg);
+            border: 1px solid var(--border-color);
+            border-left: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-color);
+            font-size: 1.2rem;
+            border-radius: 0 5px 5px 0;
+        }
+
+        .search-box {
+            margin: 0 1rem 1rem 1rem;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            background: var(--accent-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--primary-text);
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--secondary-text);
+        }
+
+        .nav-section {
+            margin-bottom: 1rem;
+        }
+
+        .nav-section-title {
+            padding: 0.5rem 1rem;
+            color: var(--accent-color);
+            font-weight: bold;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            color: var(--secondary-text);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(0, 212, 255, 0.1);
+            color: var(--primary-text);
+            border-left-color: var(--accent-color);
+        }
+
+        .nav-item.active {
+            background: rgba(0, 212, 255, 0.2);
+            color: var(--accent-color);
+            border-left-color: var(--accent-color);
+        }
+
+        .nav-item-icon {
+            margin-right: 0.75rem;
+            font-size: 1.1rem;
+        }
+
+        /* Main Content */
+        .main {
+            margin-left: 300px;
+            margin-top: 70px;
+            padding: 2rem;
+            min-height: calc(100vh - 70px);
+            transition: margin-left 0.3s ease;
+        }
+
+        .main.expanded {
+            margin-left: 20px;
+        }
+
+        .content-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .content-title {
+            font-size: 2.5rem;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 0;
+        }
+
+        .content-meta {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .badge.version {
+            background: var(--success-color);
+            color: var(--primary-bg);
+        }
+
+        .badge.status {
+            background: var(--warning-color);
+            color: var(--primary-bg);
+        }
+
+        /* Content Sections */
+        .section {
+            margin-bottom: 3rem;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.6s forwards;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            color: var(--accent-color);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-title::before {
+            content: "";
+            width: 4px;
+            height: 30px;
+            background: var(--gradient-accent);
+            border-radius: 2px;
+        }
+
+        .card {
+            background: var(--secondary-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--gradient-primary);
+        }
+
+        .card:hover {
+            border-color: var(--accent-color);
+            box-shadow: var(--shadow-glow);
+            transform: translateY(-2px);
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            color: var(--primary-text);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-content {
+            color: var(--secondary-text);
+            line-height: 1.7;
+        }
+
+        /* Code Blocks */
+        .code-block {
+            background: var(--primary-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            overflow-x: auto;
+            position: relative;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .code-language {
+            font-size: 0.8rem;
+            color: var(--accent-color);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: var(--accent-bg);
+            border: 1px solid var(--border-color);
+            color: var(--secondary-text);
+            padding: 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: var(--accent-color);
+            color: var(--primary-bg);
+        }
+
+        .code {
+            color: var(--primary-text);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        /* Interactive Elements */
+        .interactive-demo {
+            background: var(--accent-bg);
+            border: 2px solid var(--accent-color);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+            text-align: center;
+        }
+
+        .demo-title {
+            font-size: 1.3rem;
+            color: var(--accent-color);
+            margin-bottom: 1rem;
+        }
+
+        .timeline-simulator {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .timeline-box {
+            background: var(--secondary-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .timeline-box:hover {
+            border-color: var(--accent-color);
+            transform: scale(1.05);
+        }
+
+        .timeline-box.active {
+            border-color: var(--accent-color);
+            box-shadow: var(--shadow-glow);
+        }
+
+        /* API Reference */
+        .api-method {
+            background: var(--secondary-bg);
+            border-left: 4px solid var(--success-color);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .api-method.post { border-left-color: var(--warning-color); }
+        .api-method.delete { border-left-color: var(--highlight-color); }
+
+        .method-signature {
+            font-family: monospace;
+            font-size: 1.1rem;
+            color: var(--accent-color);
+            margin-bottom: 0.5rem;
+        }
+
+        /* Breadcrumbs */
+        .breadcrumbs {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            color: var(--secondary-text);
+            font-size: 0.9rem;
+        }
+
+        .breadcrumb-item {
+            color: var(--secondary-text);
+            text-decoration: none;
+        }
+
+        .breadcrumb-item:hover {
+            color: var(--accent-color);
+        }
+
+        .breadcrumb-separator::after {
+            content: ">";
+            margin: 0 0.5rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 100%;
+            }
+            
+            .main {
+                margin-left: 0;
+            }
+            
+            .main.expanded {
+                margin-left: 0;
+            }
+        }
+
+        /* Table of Contents */
+        .toc {
+            position: fixed;
+            right: 2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--secondary-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            max-width: 200px;
+            z-index: 100;
+        }
+
+        .toc-title {
+            font-size: 0.9rem;
+            color: var(--accent-color);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .toc-item {
+            display: block;
+            color: var(--secondary-text);
+            text-decoration: none;
+            padding: 0.25rem 0;
+            font-size: 0.8rem;
+            border-left: 2px solid transparent;
+            padding-left: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .toc-item:hover {
+            color: var(--accent-color);
+            border-left-color: var(--accent-color);
+        }
+
+        .toc-item.active {
+            color: var(--accent-color);
+            border-left-color: var(--accent-color);
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Animation -->
+    <div class="background-animation" id="backgroundAnimation"></div>
+
+    <!-- Header -->
+    <header class="header">
+        <a href="#" class="logo">ChronoShift Docs</a>
+        <nav class="nav-links">
+            <a href="#getting-started" class="nav-link active">Getting Started</a>
+            <a href="#api" class="nav-link">API Reference</a>
+            <a href="#examples" class="nav-link">Examples</a>
+            <a href="#guides" class="nav-link">Guides</a>
+            <a href="#support" class="nav-link">Support</a>
+        </nav>
+    </header>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-toggle" id="sidebarToggle">◀</div>
+        
+        <div class="search-box">
+            <div class="search-icon">🔍</div>
+            <input type="text" class="search-input" placeholder="Search documentation...">
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">🚀 Getting Started</div>
+            <a href="#overview" class="nav-item active">
+                <span class="nav-item-icon">📖</span>
+                Overview
+            </a>
+            <a href="#installation" class="nav-item">
+                <span class="nav-item-icon">⚡</span>
+                Quick Start
+            </a>
+            <a href="#configuration" class="nav-item">
+                <span class="nav-item-icon">⚙️</span>
+                Configuration
+            </a>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">🌌 Core Concepts</div>
+            <a href="#timelines" class="nav-item">
+                <span class="nav-item-icon">🌀</span>
+                Timelines
+            </a>
+            <a href="#causality" class="nav-item">
+                <span class="nav-item-icon">🔗</span>
+                Causality
+            </a>
+            <a href="#paradoxes" class="nav-item">
+                <span class="nav-item-icon">⚠️</span>
+                Paradoxes
+            </a>
+            <a href="#synchronization" class="nav-item">
+                <span class="nav-item-icon">🔄</span>
+                Synchronization
+            </a>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">🔧 API Reference</div>
+            <a href="#websocket" class="nav-item">
+                <span class="nav-item-icon">📡</span>
+                WebSocket API
+            </a>
+            <a href="#rest" class="nav-item">
+                <span class="nav-item-icon">🌐</span>
+                REST API
+            </a>
+            <a href="#events" class="nav-item">
+                <span class="nav-item-icon">⚡</span>
+                Events
+            </a>
+            <a href="#auth" class="nav-item">
+                <span class="nav-item-icon">🔐</span>
+                Authentication
+            </a>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">🎮 Advanced</div>
+            <a href="#custom-physics" class="nav-item">
+                <span class="nav-item-icon">⚛️</span>
+                Custom Physics
+            </a>
+            <a href="#ai-integration" class="nav-item">
+                <span class="nav-item-icon">🤖</span>
+                AI Integration
+            </a>
+            <a href="#performance" class="nav-item">
+                <span class="nav-item-icon">🚀</span>
+                Performance
+            </a>
+        </div>
+    </aside>
+
+    <!-- Table of Contents -->
+    <nav class="toc">
+        <div class="toc-title">On This Page</div>
+        <a href="#overview" class="toc-item active">Overview</a>
+        <a href="#quick-start" class="toc-item">Quick Start</a>
+        <a href="#features" class="toc-item">Key Features</a>
+        <a href="#demo" class="toc-item">Interactive Demo</a>
+        <a href="#next-steps" class="toc-item">Next Steps</a>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main" id="main">
+        <div class="breadcrumbs">
+            <a href="#" class="breadcrumb-item">Home</a>
+            <span class="breadcrumb-separator"></span>
+            <a href="#" class="breadcrumb-item">Documentation</a>
+            <span class="breadcrumb-separator"></span>
+            <span class="breadcrumb-item">Getting Started</span>
+        </div>
+
+        <div class="content-header">
+            <h1 class="content-title">ChronoShift Documentation</h1>
+            <div class="content-meta">
+                <span class="badge version">v2.7.4</span>
+                <span class="badge status">Beta</span>
+            </div>
+        </div>
+
+        <section class="section" id="overview">
+            <h2 class="section-title">🌌 Overview</h2>
+            <div class="card">
+                <h3 class="card-title">
+                    🚀 Welcome to the Multiverse
+                </h3>
+                <div class="card-content">
+                    <p>ChronoShift: The Web Paradox est un jeu révolutionnaire qui repousse les limites du possible dans un navigateur web. Contrôlez plusieurs versions de vous-même à travers des timelines parallèles, résolvez des puzzles interdimensionnels et naviguez dans les paradoxes temporels les plus complexes jamais créés.</p>
+                    
+                    <p>Cette documentation vous guidera à travers tous les aspects du développement avec ChronoShift, depuis l'installation basique jusqu'aux concepts avancés de physique quantique et de synchronisation temporelle.</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 class="card-title">
+                    ⚡ Démarrage Rapide
+                </h3>
+                <div class="card-content">
+                    <p>Commencez votre voyage temporel en quelques minutes :</p>
+                    
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-language">bash</span>
+                            <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
+                        </div>
+                        <div class="code">
+# Clone le multiverse<br>
+git clone https://github.com/chronoshift/web-paradox.git<br>
+cd chronoshift-web-paradox<br><br>
+
+# Installation des dépendances quantiques<br>
+npm install --temporal-mode<br><br>
+
+# Démarrage du serveur temporel<br>
+npm run dev:multiverse<br><br>
+
+# Ouverture du portail dimensionnel<br>
+open http://localhost:3000/timeline/alpha
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="features">
+            <h2 class="section-title">✨ Fonctionnalités Clés</h2>
+            
+            <div class="card">
+                <h3 class="card-title">🌀 Contrôle Multi-Timeline</h3>
+                <div class="card-content">
+                    <p>Gérez jusqu'à 4 versions de vous-même simultanément dans des univers parallèles. Chaque timeline possède ses propres lois physiques, sa gravité, et son flux temporel unique.</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 class="card-title">🔗 Synchronisation Temps Réel</h3>
+                <div class="card-content">
+                    <p>Utilise WebSocket et WebRTC pour une coordination parfaite entre les timelines. Latence sub-milliseconde garantie pour les interactions critiques.</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 class="card-title">🧩 Puzzles Causaux Complexes</h3>
+                <div class="card-content">
+                    <p>Les actions dans une timeline affectent les autres de manière imprévisible. Système de causalité avancé avec détection automatique des paradoxes.</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 class="card-title">🛠️ Console de Débogage Intégrée</h3>
+                <div class="card-content">
+                    <p>Interface développeur complète avec commandes quantiques, monitoring en temps réel, et système de rollback temporel.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="demo">
+            <h2 class="section-title">🎮 Démonstration Interactive</h2>
+            
+            <div class="interactive-demo">
+                <h3 class="demo-title">Simulateur de Timeline</h3>
+                <p>Cliquez sur les timelines pour voir les effets causaux en action :</p>
+                
+                <div class="timeline-simulator">
+                    <div class="timeline-box" onclick="activateTimeline(this, 'alpha')" data-timeline="alpha">
+                        <h4>Timeline α</h4>
+                        <p>Reality: 100%</p>
+                        <p>Status: <span class="status">Stable</span></p>
+                    </div>
+                    <div class="timeline-box" onclick="activateTimeline(this, 'beta')" data-timeline="beta">
+                        <h4>Timeline β</h4>
+                        <p>Reality: 94%</p>
+                        <p>Status: <span class="status">Mirror</span></p>
+                    </div>
+                    <div class="timeline-box" onclick="activateTimeline(this, 'gamma')" data-timeline="gamma">
+                        <h4>Timeline γ</h4>
+                        <p>Reality: 87%</p>
+                        <p>Status: <span class="status">Quantum</span></p>
+                    </div>
+                    <div class="timeline-box" onclick="activateTimeline(this, 'delta')" data-timeline="delta">
+                        <h4>Timeline δ</h4>
+                        <p>Reality: 76%</p>
+                        <p>Status: <span class="status">Chaos</span></p>
+                    </div>
+                </div>
+                
+                <div id="causal-output" style="margin-top: 1rem; padding: 1rem; background: rgba(0,212,255,0.1); border-radius: 8px; display: none;">
+                    <strong>Effet Causal Détecté :</strong>
+                    <div id="causal-text"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="api-preview">
+            <h2 class="section-title">🔧 Aperçu API</h2>
+            
+            <div class="api-method">
+                <div class="method-signature">GET /api/v2/multiverse/status</div>
+                <p>Récupère l'état global du multiverse avec toutes les métriques temporelles.</p>
+            </div>
+
+            <div class="api-method post">
+                <div class="method-signature">POST /api/v2/timelines/{id}/action</div>
+                <p>Envoie une action à une timeline spécifique avec propagation causale automatique.</p>
+            </div>
+
+            <div class="api-method delete">
+                <div class="method-signature">POST /api/v2/emergency/rollback</div>
+                <p>Déclenche un rollback d'urgence vers un état stable précédent.</p>
+            </div>
+
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-language">javascript</span>
+                    <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
+                </div>
+                <div class="code">
+// Connexion WebSocket au serveur temporel<br>
+const chronoSocket = new WebSocket('wss://api.chronoshift.dev/v2/temporal');<br><br>
+
+// Écoute des événements quantiques<br>
+chronoSocket.on('timeline.sync', (data) => {<br>
+&nbsp;&nbsp;console.log(`Timeline ${data.id} synchronized at ${data.timestamp}`);<br>
+});<br><br>
+
+chronoSocket.on('paradox.detected', (event) => {<br>
+&nbsp;&nbsp;handleParadox(event.severity, event.affected_timelines);<br>
+});
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="next-steps">
+            <h2 class="section-title">🚀 Prochaines Étapes</h2>
+            
+            <div class="card">
+                <h3 class="card-title">📚 Guides Recommandés</h3>
+                <div class="card-content">
+                    <ul>
+                        <li><strong>Configuration Avancée</strong> - Personnalisez votre environnement quantique</li>
+                        <li><strong>Gestion des Paradoxes</strong> - Apprenez à résoudre les boucles causales</li>
+                        <li><strong>API WebSocket</strong> - Intégration temps réel complète</li>
+                        <li><strong>Physique Customisée</strong> - Créez vos propres lois temporelles</li>
+                    </ul>
