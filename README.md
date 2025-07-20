@@ -32,7 +32,7 @@
 
 ## 🌟 Vue d'ensemble
 
-**ChronoShift: The Web Paradox** est un jeu expérimental qui transforme votre navigateur en machine à voyager dans le temps. Contrôlez plusieurs versions de vous-même à travers des timelines parallèles, résolvez des puzzles interdimensionnels et naviguez dans les paradoxes temporels les plus complexes jamais créés.
+**ChronoShift: The Web Paradox** est un jeu expérimental qui transforme votre navigateur en machine à voyager dans le temps. Contrôlez plusieurs versions de vous-même à travers des timelines parallèles, résolvez des puzzles interdimensionnels et naviguez dans les paradoxes temporels les plus complexes jamais créés. Voici Le lien de Notre Jeu web [ChronoShift]( https://noctavia.github.io/ChronoShift/)
 
 ### 🎯 Concept Révolutionnaire
 
