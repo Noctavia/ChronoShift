@@ -387,7 +387,7 @@ Reality-Index: 94.7% (stable)"
 
 ### 📖 Liens Utiles
 - [🏠 Site Officiel](https://chronoshift.dev)
-- [📚 Documentation API](https://docs.chronoshift.dev)
+- [📚 Documentation API](https://noctavia.github.io/Documentation-du-jeu/)
 - [🎮 Guides de Jeu](https://guides.chronoshift.dev)
 - [🔬 Articles Scientifiques](https://research.chronoshift.dev)
 - [💬 Community Discord](https://discord.gg/chronoshift)
